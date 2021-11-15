@@ -1,0 +1,38 @@
+{
+  "name": "esbuild-squoosh",
+  "version": "0.0.2",
+  "description": "An esbuild plugin for compressing resolved images using libSquoosh",
+  "keywords": [
+    "esbuild",
+    "esbuild-plugin",
+    "squoosh",
+    "image",
+    "compression"
+  ],
+  "main": "./dist/index",
+  "types": "./dist/index.d.ts",
+  "browser": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "ts-node .build/esbuild.ts && tsc --emitDeclarationOnly --outDir dist",
+    "prepublishOnly": "npm run build"
+  },
+  "author": "bognarlaszlo",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bognarlaszlo/esbuild-squoosh.git"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@squoosh/lib": "^0.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "^16.11.7",
+    "esbuild": "^0.13.13",
+    "ts-node": "^10.4.0",
+    "typescript": "^4.4.4"
+  }
+}

@@ -1,0 +1,10 @@
+### System & PhpStorm ###
+.idea
+.DS_Store
+
+### Package managers ###
+node_modules
+npm-debug.log
+
+### Compiled code ###
+dist
