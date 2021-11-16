@@ -1,6 +1,6 @@
 {
   "name": "esbuild-squoosh",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "An esbuild plugin for compressing resolved images using libSquoosh",
   "keywords": [
     "esbuild",

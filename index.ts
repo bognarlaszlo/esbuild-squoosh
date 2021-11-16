@@ -28,7 +28,7 @@ const CONFIG: PluginOptions = {
 };
 
 const squooshPlugin = (options?: PluginOptions) => ({
-    name: 'esbuild-squoosh',
+    name: NAMESPACE,
     setup: (build: PluginBuild) => {
         Object.assign(CONFIG, options);
 
