@@ -1,23 +1,29 @@
-import { OnLoadArgs, OnLoadResult, OnResolveArgs, OnResolveResult, PluginBuild } from 'esbuild';
+import { OnLoadArgs, OnLoadResult, PluginBuild } from 'esbuild';
 
-import { extname, isAbsolute, resolve } from 'path';
+import { extname } from 'path';
 import { ImagePool, encoders } from '@squoosh/lib';
+
+type EncodeOptions = {
+    mozjpeg?: any
+    webp?: any
+    avif?: any
+    jxl?: any
+    wp2?: any
+    oxipng?: any
+}
+
+type Encoder = {
+    encoder: string
+    encodeOptions: EncodeOptions
+}
 
 type PluginOptions = {
     disabled: boolean
     extensions: RegExp
-    encodeOptions: {
-        mozjpeg?: any;
-        webp?: any;
-        avif?: any;
-        jxl?: any;
-        wp2?: any;
-        oxipng?: any;
-    }
+    encodeOptions: EncodeOptions
 }
 
 const NAMESPACE = 'esbuild-squoosh';
-let Squoosh: ImagePool;
 const CONFIG: PluginOptions = {
     disabled: false,
     extensions: /.*/,
@@ -26,6 +32,8 @@ const CONFIG: PluginOptions = {
         oxipng: 'auto'
     }
 };
+
+let Squoosh: ImagePool;
 
 const squooshPlugin = (options?: PluginOptions) => ({
     name: NAMESPACE,
@@ -36,8 +44,7 @@ const squooshPlugin = (options?: PluginOptions) => ({
         {
             Squoosh = new ImagePool();
 
-            build.onResolve({filter: CONFIG.extensions}, onResolveHandler)
-            build.onLoad({filter: /.*/, namespace: NAMESPACE}, onLoadHandler)
+            build.onLoad({filter: CONFIG.extensions, namespace: 'file'}, onLoadHandler)
             build.onEnd(async () => {
                 await Squoosh.close()
             })
@@ -45,45 +52,27 @@ const squooshPlugin = (options?: PluginOptions) => ({
     }
 })
 
-const onResolveHandler = async ({resolveDir, path}: OnResolveArgs): Promise<OnResolveResult> => {
-    const file = isAbsolute(path) ? path : resolve(resolveDir, path);
-    const extension = extname(file).slice(1).toLowerCase()
-
-    return {
-        path: file,
-        namespace: NAMESPACE,
-        pluginData: {
-            extension
-        }
-    }
-}
-
-const onLoadHandler = async ({path, pluginData: {extension}}: OnLoadArgs): Promise<OnLoadResult> => {
-    const contents = await encode(path, engine(extension));
+const onLoadHandler = async ({path}: OnLoadArgs): Promise<OnLoadResult> => {
+    const extension = extname(path).slice(1).toLowerCase();
+    const contents = await encode(path, extension);
 
     return {
         contents,
-        loader: 'file'
+        loader: 'file',
+        pluginName: NAMESPACE
     }
 }
 
-const encode = async (path, {encoder, options}) => {
+const encode = async (path: string, ext) => {
+    // @ts-ignore: No type declarations for "encoders"
+    const [encoder, {defaultEncoderOptions}] = Object.entries(encoders).find(([, {extension}]) => extension === ext) || ['mozjpeg', encoders.mozjpeg]
+
     const image = Squoosh.ingestImage(path);
-    await image.encode(options);
+    await image.encode({
+        [encoder]: CONFIG.encodeOptions[encoder] || defaultEncoderOptions
+    });
 
     return (await image.encodedWith[encoder]).binary
-}
-
-const engine = (ext: string) => {
-    // @ts-ignore
-    const [encoder] = Object.entries(encoders).find(([, {extension}]) => extension === ext) || ['mozjpeg']
-
-    return {
-        encoder,
-        options: {
-            [encoder]: CONFIG.encodeOptions[encoder]
-        }
-    }
 }
 
 export = squooshPlugin
