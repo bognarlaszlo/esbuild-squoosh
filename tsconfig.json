@@ -1,18 +1,6 @@
 {
+    "extends": "../tsconfig.json",
     "compilerOptions": {
-        "esModuleInterop": true,
-        "moduleResolution": "node",
-        "resolveJsonModule": true,
-        "declaration": true,
-        "lib": [
-            "ES2020"
-        ],
-    },
-    "types": [
-        "node"
-    ],
-    "files": ["./index.ts"],
-    "exclude": [
-        "node_modules"
-    ]
+        "resolveJsonModule": true
+    }
 }
